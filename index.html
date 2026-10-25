@@ -2,9 +2,9 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
-<title>Ежедневник</title>
+<title>Ежедневник 2.9</title>
 <style>
 :root{--bg:#fff;--ink:#111;--muted:#666;--line:#d6d6d6;--border:#777;--soft:#f7f7f7}
 *{box-sizing:border-box}
@@ -37,6 +37,9 @@ button{cursor:pointer}
 .tasktext{flex:1;min-width:0;cursor:pointer}
 .task.done .tasktext{text-decoration:line-through;color:#888}
 .empty{font-size:10px;color:#999;padding:5px 0}
+.inline-editor{display:block;width:100%;min-height:34px;resize:none;border:0;border-bottom:1px solid #111;border-radius:0;background:transparent;color:#111;padding:3px 0;font:inherit;line-height:1.25;outline:none}
+.inline-actions{display:flex;gap:6px;margin-top:5px}
+.inline-actions button{border:1px solid #999;border-radius:4px;background:#fff;color:#111;font-size:11px;padding:4px 8px}
 .addday{border:0;background:transparent;text-align:left;color:#777;padding:4px 0 0;font-size:clamp(9px,1.2vw,12px);flex-shrink:0}
 .weekend{padding:4px 6px}
 .weekend .dayhead{padding-bottom:2px;margin-bottom:2px}
@@ -45,7 +48,7 @@ button{cursor:pointer}
 .weekend .task{font-size:clamp(8px,1.15vw,12px);padding:1px 0}
 .weekend .check{width:11px;height:11px;flex-basis:11px}
 .weekend .addday{padding-top:2px}
-.footer{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:clamp(9px,1.2vw,12px);color:#555}
+.footer{flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:6px;font-size:clamp(9px,1.2vw,12px);color:#777}
 .nav{border:0;background:transparent;color:#444;padding:4px 0;display:flex;align-items:center;gap:4px;white-space:nowrap}
 .plus{width:clamp(32px,4vw,42px);height:clamp(32px,4vw,42px);border:0;border-radius:5px;background:#111;color:#fff;font-size:26px;line-height:1}
 dialog{border:1px solid #aaa;border-radius:8px;padding:18px;width:min(92vw,390px);background:#fff;color:#111}
@@ -91,6 +94,288 @@ textarea{min-height:90px;resize:vertical}
  .dayhead{padding-bottom:2px;margin-bottom:2px}
  .task{padding:1px 0}
 }
+
+/* v1.3 — v1.1 geometry is preserved; interaction and density improved */
+.tasks{
+ background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 17px,#e7e7e7 17px,#e7e7e7 18px);
+ background-position:0 0;
+}
+.task{min-height:18px;padding:0;font-size:clamp(9px,1.32vw,14px);line-height:17px;align-items:center}
+.tasktext[contenteditable="true"]{outline:none;cursor:text;white-space:pre-wrap;min-height:17px;line-height:17px;padding:0}
+.tasktext[contenteditable="true"]:empty:before{content:"Введите дело…";color:#999}
+.inline-editor{min-height:18px;height:18px;overflow:hidden;border:0;background:transparent;padding:0;margin:0;line-height:17px}
+.inline-actions{display:none}
+.empty{min-height:18px;padding:0;line-height:17px;cursor:text;color:#aaa}
+.check{
+ width:22px;height:22px;flex:0 0 22px;
+ border:0;background:transparent;border-radius:50%;
+ margin:0 1px 0 -3px;padding:5px;position:relative;
+}
+.check:before{
+ content:"";display:block;width:10px;height:10px;border:1px solid #666;border-radius:50%;background:#fff;
+}
+.check.done{background:transparent;color:#fff}
+.check.done:before{background:#111;border-color:#111}
+.check.done:after{
+ content:"✓";position:absolute;inset:0;display:grid;place-items:center;
+ font-size:8px;line-height:1;color:#fff;
+}
+.weekend .task{min-height:18px;padding:0;line-height:17px}
+.weekend .check{width:22px;height:22px;flex-basis:22px}
+.week{position:relative;perspective:1100px;transform-style:preserve-3d}
+.week.page-turn-next{animation:turnNext .34s cubic-bezier(.22,.61,.36,1)}
+.week.page-turn-prev{animation:turnPrev .34s cubic-bezier(.22,.61,.36,1)}
+@keyframes turnNext{
+ 0%{transform:perspective(1100px) rotateY(0deg) translateX(0);opacity:1}
+ 48%{transform:perspective(1100px) rotateY(-7deg) translateX(-18px);opacity:.72}
+ 49%{opacity:.08}
+ 50%{transform:perspective(1100px) rotateY(7deg) translateX(18px);opacity:.08}
+ 100%{transform:perspective(1100px) rotateY(0deg) translateX(0);opacity:1}
+}
+@keyframes turnPrev{
+ 0%{transform:perspective(1100px) rotateY(0deg) translateX(0);opacity:1}
+ 48%{transform:perspective(1100px) rotateY(7deg) translateX(18px);opacity:.72}
+ 49%{opacity:.08}
+ 50%{transform:perspective(1100px) rotateY(-7deg) translateX(-18px);opacity:.08}
+ 100%{transform:perspective(1100px) rotateY(0deg) translateX(0);opacity:1}
+}
+/* v1.4 refinements */
+.daynum.today-mark{
+ display:inline-flex;align-items:center;justify-content:center;
+ min-width:25px;height:25px;padding:0 3px;
+ background:#22a447;color:#fff;
+}
+.task,.weekend .task{
+ min-height:18px;height:18px;line-height:18px;
+ font-size:clamp(10px,1.48vw,15px);
+ align-items:center;
+}
+.tasktext[contenteditable="true"]{
+ min-height:18px;line-height:18px;
+ display:flex;align-items:center;
+}
+.check{
+ align-self:center;
+ display:flex;align-items:center;justify-content:center;
+}
+.check:before{flex:none}
+.rule-slot{
+ height:18px;min-height:18px;width:100%;
+ cursor:text;
+}
+@media(max-width:560px){
+ .task,.weekend .task{min-height:17px;height:17px;line-height:17px;padding:0;font-size:10.5px}
+ .tasktext[contenteditable="true"]{min-height:17px;line-height:17px}
+ .inline-editor{min-height:17px;height:17px;line-height:17px}
+ .rule-slot{height:17px;min-height:17px}
+}
+
+/* v1.5 */
+.tasks{
+ overflow-y:auto;
+ overflow-x:hidden;
+ -webkit-overflow-scrolling:touch;
+ overscroll-behavior:contain;
+ touch-action:pan-y;
+ scrollbar-width:none;
+}
+.tasks::-webkit-scrollbar{display:none}
+.task,.weekend .task{
+ font-size:clamp(11px,1.62vw,16px);
+ flex:0 0 18px;
+}
+.tasktext[contenteditable="true"]{
+ font-size:inherit;
+ line-height:18px;
+}
+.rule-slot{flex:0 0 18px}
+.inline-editor{flex:0 0 18px;font-size:clamp(11px,1.62vw,16px)}
+@media(max-width:560px){
+ .task,.weekend .task{
+   font-size:11.5px;
+   flex-basis:17px;
+ }
+ .tasktext[contenteditable="true"]{font-size:11.5px;line-height:17px}
+ .rule-slot,.inline-editor{flex-basis:17px}
+ .inline-editor{font-size:11.5px}
+}
+
+
+/* v1.6 — each task is permanently attached to its row number */
+.tasks{
+ --row-h:18px;
+ position:relative;
+ overflow-y:auto;
+ scroll-snap-type:y proximity;
+ background-size:100% var(--row-h);
+ background-image:repeating-linear-gradient(
+   to bottom,
+   transparent 0,
+   transparent calc(var(--row-h) - 1px),
+   #e7e7e7 calc(var(--row-h) - 1px),
+   #e7e7e7 var(--row-h)
+ );
+}
+.task,.weekend .task,.rule-slot,.inline-editor{
+ box-sizing:border-box;
+ height:var(--row-h)!important;
+ min-height:var(--row-h)!important;
+ flex:0 0 var(--row-h)!important;
+ margin:0!important;
+ padding-top:0!important;
+ padding-bottom:0!important;
+ scroll-snap-align:start;
+}
+.task,.weekend .task{
+ display:flex;
+ align-items:center!important;
+ line-height:var(--row-h)!important;
+}
+.tasktext[contenteditable="true"]{
+ box-sizing:border-box;
+ height:var(--row-h)!important;
+ min-height:var(--row-h)!important;
+ line-height:var(--row-h)!important;
+ padding:0!important;
+ margin:0!important;
+ display:block!important;
+ overflow:hidden;
+}
+.check{
+ align-self:center!important;
+ margin-top:0!important;
+ margin-bottom:0!important;
+}
+.inline-editor{
+ line-height:var(--row-h)!important;
+ padding:0!important;
+ vertical-align:middle;
+ resize:none;
+}
+@media(max-width:560px){
+ .tasks{--row-h:17px}
+ .tasktext[contenteditable="true"],.task,.weekend .task,.inline-editor{
+   line-height:var(--row-h)!important;
+ }
+}
+
+
+/* v1.7 */
+.tasks{
+ --row-h:18px;
+ background-image:none!important;
+ overflow-y:auto;
+ overflow-x:hidden;
+ -webkit-overflow-scrolling:touch;
+ overscroll-behavior:contain;
+ touch-action:pan-y;
+}
+.paper-row{
+ box-sizing:border-box;
+ height:var(--row-h);
+ min-height:var(--row-h);
+ flex:0 0 var(--row-h);
+ border-bottom:1px solid #e7e7e7;
+ position:relative;
+}
+.paper-row > .task,
+.paper-row > .rule-slot,
+.paper-row > .inline-editor{
+ position:absolute;
+ inset:0;
+ width:100%;
+ height:100%!important;
+ min-height:100%!important;
+}
+@media(max-width:560px){.tasks{--row-h:17px}}
+
+
+/* v1.8 */
+.tasks{
+ scroll-behavior:smooth;
+ scroll-snap-type:none!important;
+ overscroll-behavior-y:contain;
+ -webkit-overflow-scrolling:touch;
+}
+.paper-row{scroll-snap-align:none!important}
+
+
+/* v1.9.1 — reliable iPhone long-press drag */
+.task{touch-action:pan-y}
+.task.drag-source{opacity:.18}
+.drag-ghost{
+ position:fixed;z-index:99999;pointer-events:none;
+ background:#fff;border:1px solid #111;
+ height:24px;line-height:24px;padding:0 8px;
+ font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+ max-width:48vw;box-shadow:0 4px 14px rgba(0,0,0,.18);
+ transform:translate(-12px,-30px);
+}
+.paper-row.drop-target{
+ outline:2px solid #111;outline-offset:-2px;
+ background:rgba(0,0,0,.06)
+}
+body.task-dragging{
+ -webkit-user-select:none!important;user-select:none!important;
+ overscroll-behavior:none;
+}
+body.task-dragging .week{touch-action:none!important}
+
+/* v2.0 voice input */
+.voice-btn{
+ width:30px;height:30px;padding:0;border:1px solid #111;background:#fff;color:#111;
+ display:inline-grid;place-items:center;font-size:15px;line-height:1;
+}
+.voice-btn.listening{
+ background:#111;color:#fff;
+ animation:voicePulse 1.15s ease-in-out infinite;
+}
+@keyframes voicePulse{50%{transform:scale(.92);opacity:.68}}
+.voice-toast{
+ position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
+ z-index:100000;background:#111;color:#fff;border:1px solid #111;
+ padding:7px 10px;font-size:11px;max-width:86vw;text-align:center;
+ box-shadow:0 3px 12px rgba(0,0,0,.18);pointer-events:none;
+}
+
+
+/* v2.0.1 microphone beside Current Week */
+#today + #voiceBtn{
+ display:inline-grid!important;
+ visibility:visible!important;
+ opacity:1!important;
+ vertical-align:middle;
+ margin-left:5px;
+}
+#voiceBtn{
+ width:30px!important;height:30px!important;min-width:30px!important;
+ padding:0!important;border:1px solid #111!important;
+ background:#fff;color:#111;place-items:center;
+ font-size:15px!important;line-height:1!important;
+}
+#voiceBtn.listening{background:#111!important;color:#fff!important}
+
+
+
+
+/* v2.8.1 safe week transition — does not compete with task drag */
+#week{
+ will-change:transform,opacity;
+ transform:translate3d(0,0,0);
+ backface-visibility:hidden;
+ -webkit-backface-visibility:hidden;
+}
+#week.week-turn-left{animation:weekTurnLeft 210ms cubic-bezier(.22,.61,.36,1)}
+#week.week-turn-right{animation:weekTurnRight 210ms cubic-bezier(.22,.61,.36,1)}
+@keyframes weekTurnLeft{
+ from{transform:translate3d(18px,0,0);opacity:.90}
+ to{transform:translate3d(0,0,0);opacity:1}
+}
+@keyframes weekTurnRight{
+ from{transform:translate3d(-18px,0,0);opacity:.90}
+ to{transform:translate3d(0,0,0);opacity:1}
+}
+
 </style>
 </head>
 <body>
@@ -98,7 +383,7 @@ textarea{min-height:90px;resize:vertical}
 <header class="header">
  <div class="heading"><div class="date-title" id="currentDate">19 октября 2026</div><div class="subtitle" id="weekRange">Понедельник · Неделя 43</div></div>
  <div class="actions">
-  <button class="icon" id="today" title="Текущая неделя" aria-label="Текущая неделя">⌂</button>
+  <button class="icon" id="today" title="Текущая неделя" aria-label="Текущая неделя">⌂</button><button id="voiceBtn" class="voice-btn" type="button" aria-label="Голосовой ввод" title="Голосовой ввод"><span aria-hidden="true">🎙</span></button>
   <button class="icon" id="pickDate" title="Выбрать дату" aria-label="Выбрать дату">▦</button>
   <button class="icon" id="searchBtn" title="Поиск записей" aria-label="Поиск записей">⌕</button>
  </div>
@@ -107,11 +392,7 @@ textarea{min-height:90px;resize:vertical}
  <section class="page left" id="left"></section>
  <section class="page right" id="right"></section>
 </main>
-<footer class="footer">
- <button class="nav" id="prev">‹ Предыдущая неделя</button>
- <button class="plus" id="add" aria-label="Добавить дело">+</button>
- <button class="nav" id="next">Следующая неделя ›</button>
-</footer>
+
 </div>
 <dialog id="editDialog"><form id="editForm">
  <h2 class="modalhead" id="modalTitle">Новая запись</h2>
@@ -125,64 +406,731 @@ textarea{min-height:90px;resize:vertical}
 <script>
 const names=['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'];
 const months=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
-const initial=[['Стекло автоконтакт','Доп соглашение Дим д +','Оплата умп +','Счет и упд сады +','Сметы Ирина 3 шт','Схемы Саш*','Кс 3 шт подготовить+','Вор транспортная 10','Колес+','Зак окн+'],['НДС строй город Дим-д+','Заявки окна +','Заказ договор умп 2 изд дата +','Окно красн яр заказ дата +'],[],['Список продуктов Герман +','Обратная связь 2 Кс Ирин+','Вор подготовить по 4 объектам +','Отдать на Кс','Ид транзит+','Дима обратная связь','Расчет рыно+','Расчет дур+'],['Баня в 18','Заявки +','Замер Зпа +','Удх ид Кс вор 3 шт','Ид карсун Сэск+','Куртка+','Дима на телефон +','СБИС','Счет на материалы окна'],['Договор Сэск','Кс по 4 объектам'],[]];
-let start=new Date(2026,9,19), chosen=0, editing=null, tasks=readTasks();
-function readTasks(){try{let x=localStorage.getItem('monoPlannerV1');if(x)return JSON.parse(x)}catch(e){}return initial.map((a,d)=>a.map((text,i)=>({id:`demo-${d}-${i}`,text,done:false})))}
-function persist(){try{localStorage.setItem('monoPlannerV1',JSON.stringify(tasks))}catch(e){}}
+const STORE='monoPlannerV17', MAX_ROWS=15;
+let start=monday(new Date()), tasks=readTasks();
+
+function uid(){return 'task-'+Date.now()+'-'+Math.random().toString(36).slice(2,8)}
 function monday(d){let x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()-(x.getDay()+6)%7);return x}
 function dateAt(i){let d=new Date(start);d.setDate(d.getDate()+i);return d}
+function dateKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 function fmt(d){return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`}
 function weekNo(d){let x=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));x.setUTCDate(x.getUTCDate()+4-(x.getUTCDay()||7));let y=new Date(Date.UTC(x.getUTCFullYear(),0,1));return Math.ceil((((x-y)/86400000)+1)/7)}
+function isToday(d){let n=new Date();return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth()&&d.getDate()===n.getDate()}
+function persist(){try{localStorage.setItem(STORE,JSON.stringify(tasks))}catch(e){}}
+function dayRows(key){if(!tasks[key]||Array.isArray(tasks[key]))tasks[key]={};return tasks[key]}
+
+function readTasks(){
+ try{
+  let raw=localStorage.getItem(STORE);
+  if(raw){let p=JSON.parse(raw);if(p&&!Array.isArray(p))return p}
+  raw=localStorage.getItem('monoPlannerV16');
+  if(raw){
+   let p=JSON.parse(raw),out={};
+   Object.entries(p||{}).forEach(([k,rows])=>{
+    out[k]={};
+    Object.entries(rows||{}).slice(0,MAX_ROWS).forEach(([r,t])=>{
+     let n=+r;if(n>=0&&n<MAX_ROWS)out[k][n]=t;
+    });
+   });
+   localStorage.setItem(STORE,JSON.stringify(out));return out;
+  }
+ }catch(e){}
+ return {};
+}
+
 function render(){
  const end=dateAt(6),today=new Date();
  document.getElementById('currentDate').textContent=fmt(today);
  document.getElementById('weekRange').textContent=`${fmt(start)} — ${fmt(end)} · Неделя ${weekNo(start)}`;
  const left=document.getElementById('left'),right=document.getElementById('right');left.innerHTML='';right.innerHTML='';
  for(let i=0;i<7;i++){
-  const d=dateAt(i),arr=tasks[i]||[],weekend=i>=5,card=document.createElement('article');card.className='day'+(weekend?' weekend':'');
-  card.innerHTML=`<div class="dayhead"><div class="dayname">${names[i]}</div><div class="daynum">${d.getDate()}<span class="month"> ${months[d.getMonth()]}</span></div><div class="daycount">${arr.length}</div><button class="menu" aria-label="Добавить дело" title="Добавить">···</button></div><div class="tasks"></div><button class="addday">+ Добавить</button>`;
+  const d=dateAt(i),key=dateKey(d),rows=dayRows(key),weekend=i>=5,card=document.createElement('article');
+  card.className='day'+(weekend?' weekend':'');card.dataset.dateKey=key;
+  const tc=isToday(d)?' today-mark':'';
+  card.innerHTML=`<div class="dayhead"><div class="dayname">${names[i]}</div><div class="daynum${tc}">${d.getDate()}<span class="month"> ${months[d.getMonth()]}</span></div></div><div class="tasks"></div>`;
   const list=card.querySelector('.tasks');
-  if(!arr.length){const empty=document.createElement('div');empty.className='empty';empty.textContent='Нет записей';list.append(empty)}
-  for(const t of arr){
-   const row=document.createElement('div');row.className='task'+(t.done?' done':'');
-   const check=document.createElement('button');check.className='check'+(t.done?' done':'');check.setAttribute('aria-label','Отметить выполнение');check.addEventListener('click',()=>{t.done=!t.done;persist();render()});
-   const text=document.createElement('div');text.className='tasktext';text.textContent=t.text;text.title='Нажмите, чтобы изменить';text.addEventListener('click',()=>openEditor(i,t.id));
-   row.append(check,text);list.append(row);
+  // Exactly 15 physical ruled rows. The line is part of each row, so line + text scroll together.
+  for(let row=0;row<MAX_ROWS;row++){
+   const paper=document.createElement('div');paper.className='paper-row';paper.dataset.row=row;
+   const t=rows[row];
+   paper.append(t?makeTask(key,row,t):makeSlot(card,key,row));
+   list.append(paper);
   }
-  card.querySelector('.menu').addEventListener('click',()=>openEditor(i,null));
-  card.querySelector('.addday').addEventListener('click',()=>openEditor(i,null));
   (i<3?left:right).append(card);
  }
 }
-function openEditor(day,id=null){
- chosen=day;editing=id;document.getElementById('daySelect').value=String(day);
- let item=id===null?null:(tasks[day]||[]).find(x=>x.id===id);
- document.getElementById('modalTitle').textContent=item?'Изменить дело':'Новая запись';
- document.getElementById('taskInput').value=item?item.text:'';
- document.getElementById('delete').style.display=item?'inline-block':'none';
- document.getElementById('editDialog').showModal();setTimeout(()=>document.getElementById('taskInput').focus(),40);
+
+function makeSlot(card,key,row){
+ const slot=document.createElement('div');slot.className='rule-slot';slot.dataset.row=row;
+ slot.addEventListener('click',e=>{e.stopPropagation();beginAtRow(card,key,row,slot)});
+ return slot;
 }
-document.getElementById('daySelect').addEventListener('change',e=>chosen=Number(e.target.value));
-document.getElementById('editForm').addEventListener('submit',e=>{
- e.preventDefault();let text=document.getElementById('taskInput').value.trim();if(!text)return;let day=Number(document.getElementById('daySelect').value);
- if(editing!==null){let old=chosen,item=(tasks[old]||[]).find(x=>x.id===editing);if(item){if(old!==day){tasks[old]=tasks[old].filter(x=>x.id!==editing);item.text=text;tasks[day].push(item)}else item.text=text}}
- else tasks[day].push({id:'task-'+Date.now(),text,done:false});
- persist();document.getElementById('editDialog').close();render();
+function makeTask(key,row,t){
+ const el=document.createElement('div');el.className='task'+(t.done?' done':'');el.dataset.row=row;
+ const check=document.createElement('button');check.type='button';check.className='check'+(t.done?' done':'');check.setAttribute('aria-label','Отметить выполнение');
+ check.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();t.done=!t.done;persist();render()});
+ const text=document.createElement('div');text.className='tasktext';text.contentEditable='true';text.spellcheck=true;text.textContent=t.text;
+ text.addEventListener('input',()=>{
+  const value=text.innerText.replace(/\n/g,' ');
+  if(value.trim()===''){
+   delete dayRows(key)[row];
+   persist();
+   render();
+   requestAnimationFrame(()=>focusRow(key,row));
+   return;
+  }
+  t.text=value;
+  persist();
+ });
+ text.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+   e.preventDefault();text.blur();
+   requestAnimationFrame(()=>focusRow(key,Math.min(MAX_ROWS-1,row+1)));
+  }
+  if((e.key==='Backspace'||e.key==='Delete') && text.innerText.length<=1){
+   e.preventDefault();
+   delete dayRows(key)[row];
+   persist();
+   render();
+   requestAnimationFrame(()=>focusRow(key,row));
+  }
+ });
+ text.addEventListener('blur',()=>{
+  if(!document.body.contains(text))return;
+  t.text=text.innerText.trim();
+  if(!t.text)delete dayRows(key)[row];
+  persist();
+  render();
+ });
+ el.append(check,text);
+ installLongPressDrag(el,key,row,t);
+ return el;
+}
+
+let dragState=null;
+
+function installLongPressDrag(el,key,row,t){
+ let holdTimer=null,startX=0,startY=0,touchId=null,armed=false;
+
+ function clearHold(){
+  if(holdTimer){clearTimeout(holdTimer);holdTimer=null}
+ }
+
+ el.addEventListener('touchstart',e=>{
+  if(e.touches.length!==1)return;
+  // The completion button remains a normal tap target.
+  if(e.target.closest('button'))return;
+  const p=e.touches[0];
+  startX=p.clientX;startY=p.clientY;touchId=p.identifier;armed=true;
+  clearHold();
+  holdTimer=setTimeout(()=>{
+   if(!armed)return;
+   startTaskDrag(el,key,row,t,startX,startY,touchId);
+  },360);
+ },{passive:true});
+
+ el.addEventListener('touchmove',e=>{
+  const p=[...e.touches].find(x=>x.identifier===touchId);
+  if(!p)return;
+  if(dragState&&dragState.touchId===touchId){
+   e.preventDefault();
+   moveTaskDrag(p.clientX,p.clientY);
+   return;
+  }
+  if(Math.hypot(p.clientX-startX,p.clientY-startY)>12){
+   armed=false;clearHold();
+  }
+ },{passive:false});
+
+ el.addEventListener('touchend',e=>{
+  clearHold();armed=false;
+  if(dragState&&dragState.touchId===touchId){
+   e.preventDefault();finishTaskDrag();
+  }
+  touchId=null;
+ },{passive:false});
+
+ el.addEventListener('touchcancel',()=>{
+  clearHold();armed=false;
+  if(dragState)cancelTaskDrag();
+  touchId=null;
+ });
+
+ // Desktop fallback.
+ el.addEventListener('mousedown',e=>{
+  if(e.button!==0||e.target.closest('button,[contenteditable="true"]'))return;
+  startX=e.clientX;startY=e.clientY;
+  clearHold();
+  holdTimer=setTimeout(()=>startTaskDrag(el,key,row,t,startX,startY,'mouse'),360);
+ });
+}
+
+function startTaskDrag(el,key,row,t,x,y,touchId){
+ if(dragState)return;
+ // Stop text editing/selection before dragging.
+ const sel=window.getSelection&&window.getSelection();if(sel)sel.removeAllRanges();
+ document.activeElement?.blur?.();
+
+ const ghost=document.createElement('div');
+ ghost.className='drag-ghost';ghost.textContent=t.text;
+ document.body.appendChild(ghost);
+ el.classList.add('drag-source');
+ document.body.classList.add('task-dragging');
+
+ dragState={el,sourceKey:key,sourceRow:row,task:t,ghost,touchId,target:null};
+ positionGhost(x,y);
+ updateDropTarget(x,y);
+ if(navigator.vibrate)try{navigator.vibrate(15)}catch(_){}
+}
+
+function positionGhost(x,y){
+ if(!dragState)return;
+ dragState.ghost.style.left=x+'px';
+ dragState.ghost.style.top=y+'px';
+}
+
+function moveTaskDrag(x,y){
+ if(!dragState)return;
+ positionGhost(x,y);
+ updateDropTarget(x,y);
+
+ const hit=document.elementFromPoint(x,y);
+ const list=hit&&hit.closest('.tasks');
+ if(list){
+  const r=list.getBoundingClientRect(),edge=30;
+  if(y<r.top+edge)list.scrollTop-=6;
+  else if(y>r.bottom-edge)list.scrollTop+=6;
+ }
+}
+
+function updateDropTarget(x,y){
+ if(!dragState)return;
+ document.querySelectorAll('.paper-row.drop-target').forEach(n=>n.classList.remove('drop-target'));
+
+ // ghost has pointer-events:none, so elementFromPoint sees the real row underneath.
+ const hit=document.elementFromPoint(x,y);
+ const paper=hit&&hit.closest('.paper-row');
+ const card=hit&&hit.closest('.day');
+ if(!paper||!card){dragState.target=null;return}
+
+ const targetRow=Number(paper.dataset.row);
+ const targetKey=card.dataset.dateKey;
+ if(!Number.isInteger(targetRow)||targetRow<0||targetRow>=MAX_ROWS){
+  dragState.target=null;return;
+ }
+ paper.classList.add('drop-target');
+ dragState.target={key:targetKey,row:targetRow};
+}
+
+function finishTaskDrag(){
+ if(!dragState)return;
+ const s=dragState,target=s.target;
+
+ if(target && !(target.key===s.sourceKey && target.row===s.sourceRow)){
+  const src=dayRows(s.sourceKey);
+  const dst=dayRows(target.key);
+
+  // First remove the dragged task from its original row.
+  delete src[s.sourceRow];
+
+  // When moving inside the same day from a row above the destination,
+  // the requested visual destination remains the row under the finger.
+  const insertRow=target.row;
+
+  // If the destination row is occupied, shift that task and every following
+  // occupied row downward. The dragged task itself always occupies insertRow.
+  if(dst[insertRow]){
+   let free=-1;
+   for(let r=insertRow;r<MAX_ROWS;r++){
+    if(!dst[r]){free=r;break}
+   }
+
+   if(free!==-1){
+    for(let r=free;r>insertRow;r--){
+     if(dst[r-1]) dst[r]=dst[r-1];
+     else delete dst[r];
+    }
+    dst[insertRow]=s.task;
+    persist();
+   }else{
+    // All rows from the chosen row through row 15 are occupied.
+    // Do not lose any task: cancel the move and restore the source.
+    src[s.sourceRow]=s.task;
+   }
+  }else{
+   dst[insertRow]=s.task;
+   persist();
+  }
+ }
+ cleanupTaskDrag();
+ render();
+}
+
+function cancelTaskDrag(){
+ if(!dragState)return;
+ cleanupTaskDrag();render();
+}
+
+function cleanupTaskDrag(){
+ if(!dragState)return;
+ dragState.el.classList.remove('drag-source');
+ dragState.ghost.remove();
+ document.body.classList.remove('task-dragging');
+ document.querySelectorAll('.paper-row.drop-target').forEach(n=>n.classList.remove('drop-target'));
+ dragState=null;
+}
+
+// Mouse fallback global handlers.
+document.addEventListener('mousemove',e=>{
+ if(dragState&&dragState.touchId==='mouse'){
+  e.preventDefault();moveTaskDrag(e.clientX,e.clientY);
+ }
 });
-document.getElementById('delete').addEventListener('click',()=>{if(editing!==null){tasks[chosen]=tasks[chosen].filter(x=>x.id!==editing);persist();document.getElementById('editDialog').close();render()}});
-document.getElementById('cancel').addEventListener('click',()=>document.getElementById('editDialog').close());
-document.getElementById('prev').addEventListener('click',()=>{start.setDate(start.getDate()-7);render()});
-document.getElementById('next').addEventListener('click',()=>{start.setDate(start.getDate()+7);render()});
+document.addEventListener('mouseup',e=>{
+ if(dragState&&dragState.touchId==='mouse'){
+  e.preventDefault();finishTaskDrag();
+ }
+});
+
+function focusRow(key,row){
+ const card=document.querySelector(`.day[data-date-key="${key}"]`);if(!card)return;
+ const slot=card.querySelector(`.rule-slot[data-row="${row}"]`);
+ if(slot){slot.closest('.paper-row').scrollIntoView({block:'nearest'});beginAtRow(card,key,row,slot)}
+}
+function beginAtRow(card,key,row,slot){
+ if(row<0||row>=MAX_ROWS)return;
+ const existing=card.querySelector('.inline-editor');if(existing){existing.focus();return}
+ const area=document.createElement('textarea');area.className='inline-editor';area.rows=1;area.placeholder='';area.dataset.row=row;
+ slot.replaceWith(area);area.focus();let finished=false;
+ function save(next=false){
+  if(finished)return;finished=true;
+  const value=area.value.trim();
+  if(value)dayRows(key)[row]={id:uid(),text:value,done:false};
+  persist();render();
+  if(next&&row<MAX_ROWS-1)requestAnimationFrame(()=>focusRow(key,row+1));
+ }
+ area.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();save(true)}
+  if(e.key==='Escape'){e.preventDefault();finished=true;render()}
+  if(e.key==='Backspace'&&area.value===''){e.preventDefault();finished=true;render()}
+ });
+ area.addEventListener('blur',()=>save(false));
+}
+
+let turning=false;
+function turnWeek(direction){
+ if(turning)return;turning=true;
+ const week=document.getElementById('week');
+ week.classList.remove('page-turn-next','page-turn-prev');void week.offsetWidth;
+ week.classList.add(direction>0?'page-turn-next':'page-turn-prev');
+ // Change week at animation midpoint. No artificial week limit.
+ setTimeout(()=>{
+  const n=new Date(start.getFullYear(),start.getMonth(),start.getDate());
+  n.setDate(n.getDate()+direction*7);start=monday(n);render();
+ },135);
+ setTimeout(()=>{week.classList.remove('page-turn-next','page-turn-prev');turning=false},300);
+}
+
 document.getElementById('today').addEventListener('click',()=>{start=monday(new Date());render()});
-document.getElementById('pickDate').addEventListener('click',()=>{document.getElementById('dateInput').value=dateAt(0).getFullYear()+'-'+String(dateAt(0).getMonth()+1).padStart(2,'0')+'-'+String(dateAt(0).getDate()).padStart(2,'0');document.getElementById('dateDialog').showModal()});
+document.getElementById('pickDate').addEventListener('click',()=>{
+ let d=dateAt(0);document.getElementById('dateInput').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');document.getElementById('dateDialog').showModal()
+});
 document.getElementById('cancelDate').addEventListener('click',()=>document.getElementById('dateDialog').close());
 document.getElementById('dateForm').addEventListener('submit',e=>{e.preventDefault();let d=new Date(document.getElementById('dateInput').value+'T12:00:00');if(!isNaN(d))start=monday(d);document.getElementById('dateDialog').close();render()});
-document.getElementById('add').addEventListener('click',()=>openEditor(chosen,null));
 document.getElementById('searchBtn').addEventListener('click',()=>{document.getElementById('searchInput').value='';document.getElementById('searchResults').textContent='';document.getElementById('searchDialog').showModal()});
 document.getElementById('cancelSearch').addEventListener('click',()=>document.getElementById('searchDialog').close());
-document.getElementById('searchForm').addEventListener('submit',e=>{e.preventDefault();let q=document.getElementById('searchInput').value.trim().toLowerCase(),out=[];tasks.forEach((a,d)=>a.forEach(t=>{if(t.text.toLowerCase().includes(q))out.push(`${names[d]}: ${t.text}`)}));document.getElementById('searchResults').textContent=out.length?out.join(' · '):'Ничего не найдено';});
-let x0=null;document.getElementById('week').addEventListener('touchstart',e=>x0=e.changedTouches[0].clientX,{passive:true});document.getElementById('week').addEventListener('touchend',e=>{if(x0===null)return;let dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>70){start.setDate(start.getDate()+(dx<0?7:-7));render()}x0=null},{passive:true});
+document.getElementById('searchForm').addEventListener('submit',e=>{
+ e.preventDefault();let q=document.getElementById('searchInput').value.trim().toLowerCase(),out=[];
+ Object.entries(tasks).forEach(([key,rows])=>Object.values(rows||{}).forEach(t=>{if(q&&t.text.toLowerCase().includes(q))out.push(`${key}: ${t.text}`)}));
+ document.getElementById('searchResults').textContent=out.length?out.join(' · '):'Ничего не найдено'
+});
+const ed=document.getElementById('editDialog');if(ed)ed.remove();
+
+// Robust horizontal week swipe: listen on the whole week, including inside day lists.
+// Direction is locked after enough movement: horizontal => week, vertical => day scroll.
+const weekEl=document.getElementById('week');
+let sx=0,sy=0,mode=null,tracking=false;
+weekEl.addEventListener('touchstart',e=>{
+ if(e.touches.length!==1||e.target.closest('[contenteditable="true"],textarea,button')){tracking=false;return}
+ sx=e.touches[0].clientX;sy=e.touches[0].clientY;mode=null;tracking=true;
+},{passive:true});
+weekEl.addEventListener('touchmove',e=>{
+ if(dragState){e.preventDefault();return}
+ if(!tracking||e.touches.length!==1)return;
+ const dx=e.touches[0].clientX-sx,dy=e.touches[0].clientY-sy;
+ if(!mode&&Math.max(Math.abs(dx),Math.abs(dy))>8)mode=Math.abs(dx)>Math.abs(dy)*1.05?'horizontal':'vertical';
+ if(mode==='horizontal')e.preventDefault();
+},{passive:false});
+weekEl.addEventListener('touchend',e=>{
+ if(dragState){tracking=false;mode=null;return}
+ if(!tracking)return;
+ const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+ if((mode==='horizontal'||Math.abs(dx)>Math.abs(dy))&&Math.abs(dx)>28)turnWeek(dx<0?1:-1);
+ tracking=false;mode=null;
+},{passive:true});
+weekEl.addEventListener('touchcancel',()=>{tracking=false;mode=null},{passive:true});
+
+document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
+document.addEventListener('gesturechange',e=>e.preventDefault(),{passive:false});
+document.addEventListener('gestureend',e=>e.preventDefault(),{passive:false});
+
+// --- Voice input v2.4 ---
+// iPhone-friendly recognition: each tap/listening session can understand either a wake phrase
+// or the command after it. Wake state is kept between recognition sessions.
+const SpeechRecognitionAPI=window.SpeechRecognition||window.webkitSpeechRecognition;
+let voiceRecognition=null,voiceEnabled=false,voiceMode=null,recognitionRunning=false,restartTimer=null;
+
+const RU_MONTHS={
+ 'января':0,'январь':0,'февраля':1,'февраль':1,'марта':2,'март':2,'апреля':3,'апрель':3,
+ 'мая':4,'май':4,'июня':5,'июнь':5,'июля':6,'июль':6,'августа':7,'август':7,
+ 'сентября':8,'сентябрь':8,'октября':9,'октябрь':9,'ноября':10,'ноябрь':10,'декабря':11,'декабрь':11
+};
+const DAY_FORMS={
+ 'понедельник':0,'понедельника':0,'понедельнику':0,
+ 'вторник':1,'вторника':1,'вторнику':1,
+ 'среда':2,'среду':2,'среды':2,
+ 'четверг':3,'четверга':3,'четвергу':3,
+ 'пятница':4,'пятницу':4,'пятницы':4,
+ 'суббота':5,'субботу':5,'субботы':5,
+ 'воскресенье':6,'воскресенья':6
+};
+
+function showVoiceToast(message,ms=3000){
+ document.querySelector('.voice-toast')?.remove();
+ const n=document.createElement('div'); n.className='voice-toast'; n.textContent=message;
+ document.body.appendChild(n); setTimeout(()=>n.remove(),ms);
+}
+function norm(s){
+ return String(s||'').toLowerCase().replace(/ё/g,'е').replace(/[–—]/g,'-').replace(/\s+/g,' ').trim();
+}
+function freeRow(key){
+ const rows=dayRows(key); for(let i=0;i<MAX_ROWS;i++) if(!rows[i]) return i; return -1;
+}
+function currentWeekDate(i){
+ const d=monday(new Date()); d.setDate(d.getDate()+i); return d;
+}
+function validDate(y,m,d){
+ const x=new Date(y,m,d);
+ return x.getFullYear()===y&&x.getMonth()===m&&x.getDate()===d?x:null;
+}
+function cleanTask(s){
+ return String(s||'')
+  .replace(/^[\s,.:;!?-]+/,'').replace(/[\s,.:;!?-]+$/,'')
+  .replace(/^(?:и\s+)?(?:добавь|добавить|запиши|записать|поставь|удали|удалить)\s+/i,'')
+  .replace(/\s+/g,' ').trim();
+}
+function destinationMatches(text){
+ const t=norm(text), hits=[];
+
+ // 1) Exact numeric dates: 25.10.2026, 25/10, 25-10-26
+ const num=/(\d{1,2})[.\/-](\d{1,2})(?:[.\/-](\d{2,4}))?/g;
+ let m;
+ while((m=num.exec(t))){
+  let y=m[3]?Number(m[3]):new Date().getFullYear(); if(y<100)y+=2000;
+  const d=validDate(y,Number(m[2])-1,Number(m[1]));
+  if(d)hits.push({start:m.index,end:num.lastIndex,date:d});
+ }
+
+ // 2) Exact dates in words: 25 октября 2026
+ const monthNames=Object.keys(RU_MONTHS).join('|');
+ const words=new RegExp('(\\d{1,2})\\s+('+monthNames+')(?:\\s+(\\d{4}))?','gi');
+ while((m=words.exec(t))){
+  const y=m[3]?Number(m[3]):new Date().getFullYear();
+  const d=validDate(y,RU_MONTHS[m[2]],Number(m[1]));
+  if(d)hits.push({start:m.index,end:words.lastIndex,date:d});
+ }
+
+ // 3) Weekdays. Do NOT use JS \b: it is unreliable with Cyrillic.
+ // Find literal Russian weekday forms anywhere in the phrase.
+ const forms=Object.keys(DAY_FORMS).sort((x,y)=>y.length-x.length);
+ for(const form of forms){
+  let pos=0;
+  while((pos=t.indexOf(form,pos))!==-1){
+   const before=pos===0?' ':t[pos-1];
+   const after=t[pos+form.length]||' ';
+   const leftOK=/[\s,;:.!?]/.test(before);
+   const rightOK=/[\s,;:.!?]/.test(after);
+   if(leftOK&&rightOK){
+    hits.push({start:pos,end:pos+form.length,date:currentWeekDate(DAY_FORMS[form])});
+   }
+   pos+=form.length;
+  }
+ }
+
+ hits.sort((x,y)=>x.start-y.start);
+ const unique=[],seen=new Set();
+ for(const h of hits){
+  const k=dateKey(h.date);
+  if(!seen.has(k)){seen.add(k);unique.push(h)}
+ }
+ return unique;
+}
+function parseCommand(raw){
+ const t=norm(raw),hits=destinationMatches(t);
+ if(!hits.length)return null;
+
+ // In commands like "понедельник договор" the task is everything after destination.
+ // With several destinations: "понедельник и среда договор" -> "договор".
+ const last=Math.max(...hits.map(h=>h.end));
+ let task=cleanTask(t.slice(last));
+ task=task.replace(/^(?:и|а|на|в|во)\s+/,'').trim();
+ if(!task)return null;
+ return {dates:hits.map(h=>h.date),task};
+}
+function addCommand(p){
+ let ok=0,full=0;
+ for(const d of p.dates){
+  const key=dateKey(d),r=freeRow(key);
+  if(r<0){full++;continue}
+  dayRows(key)[r]={id:uid(),text:p.task.charAt(0).toUpperCase()+p.task.slice(1),done:false}; ok++;
+ }
+ if(ok){persist();render()}
+ showVoiceToast(ok ? `✓ Добавлено «${p.task}» на ${ok} дн.${full?` Нет места: ${full}`:''}` : 'Нет свободных строк',3300);
+ return ok>0;
+}
+function simple(s){return norm(s).replace(/[.,!?;:'"()]/g,'').replace(/\s+/g,' ').trim()}
+function deleteCommand(p){
+ const needle=simple(p.task); let ok=0,miss=0;
+ for(const d of p.dates){
+  const key=dateKey(d),rows=dayRows(key); let hit=-1;
+  for(let r=0;r<MAX_ROWS;r++){
+   if(rows[r]&&simple(rows[r].text)===needle){hit=r;break}
+  }
+  if(hit<0){
+   for(let r=0;r<MAX_ROWS;r++){
+    if(!rows[r])continue;
+    const hay=simple(rows[r].text);
+    if(hay.includes(needle)||needle.includes(hay)){hit=r;break}
+   }
+  }
+  if(hit>=0){delete rows[hit];ok++}else miss++;
+ }
+ if(ok){persist();render()}
+ showVoiceToast(ok ? `✓ Удалено «${p.task}» из ${ok} дн.${miss?` Не найдено: ${miss}`:''}` : `Дело «${p.task}» не найдено`,3400);
+ return ok>0;
+}
+
+function findTaskRowForVoice(key,task){
+ const rows=dayRows(key),needle=simple(task);
+ for(let r=0;r<MAX_ROWS;r++){
+  if(rows[r]&&simple(rows[r].text)===needle)return r;
+ }
+ for(let r=0;r<MAX_ROWS;r++){
+  if(!rows[r])continue;
+  const hay=simple(rows[r].text);
+  if(hay.includes(needle)||needle.includes(hay))return r;
+ }
+ return -1;
+}
+function parseMoveCommand(raw){
+ const t=norm(raw);
+ // Expected natural forms:
+ // "с понедельника на четверг договор"
+ // "с 25 октября на 2 ноября договор"
+ // "из вторника в пятницу позвонить Ивану"
+ const separators=[
+  /\s+на\s+/g,
+  /\s+в\s+/g,
+  /\s+во\s+/g
+ ];
+ let candidates=[];
+ for(const rx of separators){
+  rx.lastIndex=0; let m;
+  while((m=rx.exec(t)))candidates.push({start:m.index,end:rx.lastIndex});
+ }
+ candidates.sort((a,b)=>a.start-b.start);
+
+ for(const sep of candidates){
+  const left=t.slice(0,sep.start).replace(/^(?:с|со|из)\s+/,'').trim();
+  const right=t.slice(sep.end).trim();
+  const fromHits=destinationMatches(left);
+  const toHits=destinationMatches(right);
+  if(!fromHits.length||!toHits.length)continue;
+
+  // Task is everything after destination in the right part.
+  const rightLast=Math.max(...toHits.map(h=>h.end));
+  const task=cleanTask(right.slice(rightLast)).replace(/^(?:и|а)\s+/,'').trim();
+  if(task)return {from:fromHits[0].date,to:toHits[0].date,task};
+ }
+ return null;
+}
+function moveCommand(p){
+ const fromKey=dateKey(p.from),toKey=dateKey(p.to);
+ const fromRow=findTaskRowForVoice(fromKey,p.task);
+ if(fromRow<0){
+  showVoiceToast(`Дело «${p.task}» не найдено в исходном дне`,3400);
+  return false;
+ }
+ if(fromKey===toKey){
+  showVoiceToast('Исходная и новая дата совпадают',2600);
+  return false;
+ }
+ const target=freeRow(toKey);
+ if(target<0){
+  showVoiceToast('В новом дне нет свободных строк',3000);
+  return false;
+ }
+ const rowsFrom=dayRows(fromKey),rowsTo=dayRows(toKey);
+ const item=rowsFrom[fromRow];
+ delete rowsFrom[fromRow];
+ rowsTo[target]=item;
+ persist();render();
+ showVoiceToast(`✓ Перенесено «${p.task}»`,2600);
+ return true;
+}
+
+function detectWake(raw){
+ const s=norm(raw).replace(/[,.!?;:]/g,' ');
+ if(/пятниц[ауы]?\s+добав(?:ь|ить)(?:\s|$)/.test(s))return 'add';
+ if(/пятниц[ауы]?\s+удал(?:и|ить)(?:\s|$)/.test(s))return 'delete';
+ if(/пятниц[ауы]?\s+перенес(?:и|ти)(?:\s|$)/.test(s))return 'move';
+ return null;
+}
+function afterWake(raw,mode){
+ const t=norm(raw);
+ const rx=mode==='add'
+   ?/добав(?:ь|ить)(?:\s|$)/
+   :mode==='delete'
+     ?/удал(?:и|ить)(?:\s|$)/
+     :/перенес(?:и|ти)(?:\s|$)/;
+ const m=t.match(rx); return m?t.slice((m.index||0)+m[0].length).trim():'';
+}
+function processTranscript(raw){
+ const t=norm(raw); if(!t)return false;
+
+ if(!voiceMode){
+  const mode=detectWake(t); if(!mode)return false;
+  voiceMode=mode;
+  const tail=afterWake(t,mode);
+  if(tail){
+   const p=mode==='move'?parseMoveCommand(tail):parseCommand(tail);
+   if(p){
+    const ok=mode==='add'?addCommand(p):mode==='delete'?deleteCommand(p):moveCommand(p);
+    if(ok)voiceMode=null;
+    return true;
+   }
+  }
+  showVoiceToast(
+    mode==='add' ? '✓ Добавление активно. Скажите день/дату и дело.'
+    : mode==='delete' ? '✓ Удаление активно. Скажите день/дату и дело.'
+    : '✓ Перенос активен. Скажите: «с понедельника на четверг договор».'
+  ,3900);
+  return true;
+ }
+
+ const p=voiceMode==='move'?parseMoveCommand(t):parseCommand(t);
+ if(!p){
+  showVoiceToast(voiceMode==='move'
+    ?'Не распознано. Пример: «с понедельника на четверг договор»'
+    :'Не распознано. Пример: «25 октября купить материалы»',3900);
+  return false;
+ }
+ const mode=voiceMode;
+ const ok=mode==='add'?addCommand(p):mode==='delete'?deleteCommand(p):moveCommand(p);
+ if(ok)voiceMode=null;
+ return true;
+}
+function makeRecognition(){
+ const r=new SpeechRecognitionAPI();
+ r.lang='ru-RU'; r.continuous=false; r.interimResults=false; r.maxAlternatives=5;
+ r.onstart=()=>{recognitionRunning=true};
+ r.onresult=e=>{
+  const alternatives=[];
+  for(let i=e.resultIndex;i<e.results.length;i++){
+   if(!e.results[i].isFinal)continue;
+   for(let a=0;a<e.results[i].length;a++)alternatives.push(e.results[i][a].transcript);
+  }
+  let best=alternatives[0]||'';
+  if(!voiceMode)best=alternatives.find(x=>detectWake(x))||best;
+  else best=alternatives.find(x=>voiceMode==='move'?parseMoveCommand(x):parseCommand(x))||best;
+  processTranscript(best);
+ };
+ r.onerror=e=>{
+  recognitionRunning=false;
+  if(e.error==='not-allowed'||e.error==='service-not-allowed'){
+   voiceEnabled=false;voiceMode=null;
+   document.getElementById('voiceBtn')?.classList.remove('listening');
+   showVoiceToast('Разрешите микрофон для этой страницы',3600);
+  }else if(e.error!=='no-speech'&&e.error!=='aborted'){
+   showVoiceToast('Ошибка микрофона: '+e.error,2600);
+  }
+ };
+ r.onend=()=>{
+  recognitionRunning=false;
+  // iOS often ends recognition after each phrase. Re-create the recognizer,
+  // preserving voiceMode so the second phrase can complete add/delete.
+  voiceRecognition=null;
+  if(voiceEnabled){
+   clearTimeout(restartTimer);
+   restartTimer=setTimeout(runRecognition,350);
+  }
+ };
+ return r;
+}
+function runRecognition(){
+ if(!voiceEnabled||recognitionRunning)return;
+ voiceRecognition=makeRecognition();
+ try{voiceRecognition.start()}catch(e){
+  recognitionRunning=false;
+  showVoiceToast('Нажмите микрофон ещё раз для продолжения',2800);
+ }
+}
+function startVoice(){
+ if(!SpeechRecognitionAPI){
+  showVoiceToast('В этом браузере нет Speech Recognition',3200); return;
+ }
+ voiceEnabled=true;
+ document.getElementById('voiceBtn')?.classList.add('listening');
+ runRecognition();
+ showVoiceToast(voiceMode
+   ?(voiceMode==='add'?'Добавление активно — назовите день/дату и дело':'Удаление активно — назовите день/дату и дело')
+   :'Скажите «Пятница, добавь», «Пятница, удали» или «Пятница, перенеси»',3600);
+}
+function stopVoice(){
+ voiceEnabled=false; clearTimeout(restartTimer);
+ try{voiceRecognition?.abort()}catch(_){}
+ voiceRecognition=null;recognitionRunning=false;
+ document.getElementById('voiceBtn')?.classList.remove('listening');
+ showVoiceToast('Микрофон выключен',1400);
+}
+document.getElementById('voiceBtn')?.addEventListener('click',()=>voiceEnabled?stopVoice():startVoice());
+
+
+
+// v2.8 no visible diagnostics
+function dbgStatus(){}
+function dbgText(){}
+function dbgMode(){}
+
 render();
+
+
+// --- v2.8.1 drag has priority over week swipe ---
+(function(){
+ const el=document.getElementById('week');
+ if(!el)return;
+
+ // Capture phase guard: once task drag is active, prevent later week-swipe handlers
+ // from interpreting the same finger gesture as a page turn.
+ el.addEventListener('touchmove',function(e){
+   if(window.dragState){
+     e.stopImmediatePropagation();
+   }
+ },{capture:true,passive:true});
+
+ el.addEventListener('touchend',function(e){
+   if(window.dragState){
+     e.stopImmediatePropagation();
+   }
+ },{capture:true,passive:true});
+
+ el.addEventListener('touchcancel',function(e){
+   if(window.dragState){
+     e.stopImmediatePropagation();
+   }
+ },{capture:true,passive:true});
+})();
+
 </script>
 </body>
 </html>
