@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Ежедневник</title>
+<style>
+:root{--bg:#fff;--ink:#111;--muted:#666;--line:#d6d6d6;--border:#777;--soft:#f7f7f7}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:var(--ink);background:var(--bg)}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.app{height:100dvh;min-height:480px;max-width:1200px;margin:auto;padding:clamp(6px,1.1vw,14px);display:flex;flex-direction:column;gap:clamp(5px,.8vh,9px)}
+.header{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0;padding:0 2px}
+.heading{min-width:0}
+.date-title{font-size:clamp(20px,3vw,32px);font-weight:650;letter-spacing:-.04em;line-height:1.1}
+.subtitle{font-size:clamp(10px,1.4vw,14px);color:var(--muted);margin-top:3px}
+.actions{display:flex;gap:5px}
+.icon{width:clamp(30px,4vw,40px);height:clamp(30px,4vw,40px);display:grid;place-items:center;border:1px solid #aaa;border-radius:5px;background:white;color:#111;font-size:clamp(16px,2vw,22px)}
+.week{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:clamp(5px,.8vw,9px)}
+.page{min-height:0;display:grid;gap:clamp(5px,.8vh,8px)}
+.page.left{grid-template-rows:1fr 1fr 1.08fr}
+.page.right{grid-template-rows:1.08fr 1.08fr .56fr .56fr}
+.day{min-height:0;overflow:hidden;border:1px solid var(--border);border-radius:6px;background:#fff;display:flex;flex-direction:column;padding:clamp(5px,.8vw,10px)}
+.dayhead{display:flex;align-items:center;gap:4px;border-bottom:1px solid var(--line);padding-bottom:clamp(3px,.5vh,5px);margin-bottom:clamp(3px,.5vh,5px);flex-shrink:0}
+.dayname{font-size:clamp(10px,1.6vw,16px);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.daynum{font-size:clamp(15px,2.3vw,25px);font-weight:700;letter-spacing:-.04em}
+.month{font-size:clamp(8px,1vw,11px);color:var(--muted);font-weight:400;margin-left:3px}
+.daycount{font-size:10px;color:var(--muted);white-space:nowrap}
+.menu{border:0;background:none;padding:0 1px;font-size:17px;color:#555;line-height:1}
+.tasks{overflow:auto;min-height:0;flex:1;scrollbar-width:thin;scrollbar-color:#ddd transparent}
+.task{display:flex;align-items:flex-start;gap:clamp(4px,.7vw,8px);padding:clamp(2px,.4vh,4px) 0;font-size:clamp(9px,1.32vw,14px);line-height:1.2;overflow-wrap:anywhere}
+.check{width:clamp(11px,1.55vw,16px);height:clamp(11px,1.55vw,16px);flex:0 0 clamp(11px,1.55vw,16px);border:1px solid #777;border-radius:50%;background:white;padding:0;margin-top:1px;display:grid;place-items:center}
+.check.done{background:#111;border-color:#111;color:#fff}
+.check.done:after{content:"✓";font-size:10px;line-height:1}
+.tasktext{flex:1;min-width:0;cursor:pointer}
+.task.done .tasktext{text-decoration:line-through;color:#888}
+.empty{font-size:10px;color:#999;padding:5px 0}
+.addday{border:0;background:transparent;text-align:left;color:#777;padding:4px 0 0;font-size:clamp(9px,1.2vw,12px);flex-shrink:0}
+.weekend{padding:4px 6px}
+.weekend .dayhead{padding-bottom:2px;margin-bottom:2px}
+.weekend .dayname{font-size:clamp(9px,1.3vw,13px)}
+.weekend .daynum{font-size:clamp(14px,2vw,21px)}
+.weekend .task{font-size:clamp(8px,1.15vw,12px);padding:1px 0}
+.weekend .check{width:11px;height:11px;flex-basis:11px}
+.weekend .addday{padding-top:2px}
+.footer{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:clamp(9px,1.2vw,12px);color:#555}
+.nav{border:0;background:transparent;color:#444;padding:4px 0;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.plus{width:clamp(32px,4vw,42px);height:clamp(32px,4vw,42px);border:0;border-radius:5px;background:#111;color:#fff;font-size:26px;line-height:1}
+dialog{border:1px solid #aaa;border-radius:8px;padding:18px;width:min(92vw,390px);background:#fff;color:#111}
+dialog::backdrop{background:#0007}
+.modalhead{font-size:20px;font-weight:650;margin:0 0 14px}
+.label{display:block;color:#555;font-size:12px;margin:12px 0 5px}
+textarea,input[type=date],select{width:100%;border:1px solid #aaa;border-radius:5px;padding:10px;background:#fff;color:#111}
+textarea{min-height:90px;resize:vertical}
+.modalactions{display:flex;justify-content:flex-end;gap:7px;margin-top:14px}
+.btn{border:1px solid #777;border-radius:5px;padding:9px 12px;background:#fff;color:#111}
+.btn.primary{background:#111;color:white;border-color:#111}
+@media(max-width:560px){
+ .app{padding:5px 5px calc(5px + env(safe-area-inset-bottom));gap:5px}
+ .header{padding:0 2px}
+ .date-title{font-size:clamp(17px,5vw,24px)}
+ .subtitle{font-size:10px}
+ .actions{gap:3px}
+ .icon{width:29px;height:29px;border-radius:4px}
+ .week{gap:5px}
+ .page{gap:5px}
+ .day{padding:4px;border-radius:4px}
+ .dayhead{gap:2px}
+ .dayname{font-size:clamp(9px,2.7vw,13px)}
+ .daynum{font-size:clamp(15px,4vw,21px)}
+ .month{display:none}
+ .daycount{font-size:8px}
+ .menu{font-size:14px}
+ .task{font-size:clamp(8px,2.45vw,12px);gap:3px;padding:2px 0}
+ .check{width:11px;height:11px;flex-basis:11px}
+ .addday{font-size:9px}
+ .weekend .dayname{font-size:clamp(8px,2.3vw,11px)}
+ .weekend .daynum{font-size:16px}
+ .weekend .task{font-size:clamp(8px,2.15vw,10px);gap:3px}
+ .weekend .check{width:10px;height:10px;flex-basis:10px}
+ .footer{font-size:9px}
+ .nav{gap:2px}
+ .plus{width:31px;height:31px;font-size:23px}
+}
+@media(max-height:620px){
+ .app{padding-top:4px;padding-bottom:4px;gap:4px}
+ .page,.week{gap:4px}
+ .day{padding:3px}
+ .dayhead{padding-bottom:2px;margin-bottom:2px}
+ .task{padding:1px 0}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="header">
+ <div class="heading"><div class="date-title" id="currentDate">19 октября 2026</div><div class="subtitle" id="weekRange">Понедельник · Неделя 43</div></div>
+ <div class="actions">
+  <button class="icon" id="today" title="Текущая неделя" aria-label="Текущая неделя">⌂</button>
+  <button class="icon" id="pickDate" title="Выбрать дату" aria-label="Выбрать дату">▦</button>
+  <button class="icon" id="searchBtn" title="Поиск записей" aria-label="Поиск записей">⌕</button>
+ </div>
+</header>
+<main class="week" id="week">
+ <section class="page left" id="left"></section>
+ <section class="page right" id="right"></section>
+</main>
+<footer class="footer">
+ <button class="nav" id="prev">‹ Предыдущая неделя</button>
+ <button class="plus" id="add" aria-label="Добавить дело">+</button>
+ <button class="nav" id="next">Следующая неделя ›</button>
+</footer>
+</div>
+<dialog id="editDialog"><form id="editForm">
+ <h2 class="modalhead" id="modalTitle">Новая запись</h2>
+ <label class="label" for="daySelect">День недели</label>
+ <select id="daySelect"><option value="0">Понедельник</option><option value="1">Вторник</option><option value="2">Среда</option><option value="3">Четверг</option><option value="4">Пятница</option><option value="5">Суббота</option><option value="6">Воскресенье</option></select>
+ <label class="label" for="taskInput">Текст дела</label><textarea id="taskInput" maxlength="300" required placeholder="Запиши, что нужно сделать…"></textarea>
+ <div class="modalactions"><button class="btn" type="button" id="delete" style="margin-right:auto;display:none">Удалить</button><button class="btn" type="button" id="cancel">Отмена</button><button class="btn primary" type="submit">Сохранить</button></div>
+</form></dialog>
+<dialog id="dateDialog"><form id="dateForm"><h2 class="modalhead">Перейти к дате</h2><label class="label" for="dateInput">Выберите дату</label><input type="date" id="dateInput" required><div class="modalactions"><button class="btn" type="button" id="cancelDate">Отмена</button><button class="btn primary" type="submit">Открыть</button></div></form></dialog>
+<dialog id="searchDialog"><form id="searchForm"><h2 class="modalhead">Поиск записей</h2><label class="label" for="searchInput">Слово или фраза</label><input type="text" id="searchInput" placeholder="Например, заявка"><div class="modalactions"><button class="btn" type="button" id="cancelSearch">Закрыть</button><button class="btn primary" type="submit">Найти</button></div><p id="searchResults" style="font-size:13px;line-height:1.5"></p></form></dialog>
+<script>
+const names=['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'];
+const months=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const initial=[['Стекло автоконтакт','Доп соглашение Дим д +','Оплата умп +','Счет и упд сады +','Сметы Ирина 3 шт','Схемы Саш*','Кс 3 шт подготовить+','Вор транспортная 10','Колес+','Зак окн+'],['НДС строй город Дим-д+','Заявки окна +','Заказ договор умп 2 изд дата +','Окно красн яр заказ дата +'],[],['Список продуктов Герман +','Обратная связь 2 Кс Ирин+','Вор подготовить по 4 объектам +','Отдать на Кс','Ид транзит+','Дима обратная связь','Расчет рыно+','Расчет дур+'],['Баня в 18','Заявки +','Замер Зпа +','Удх ид Кс вор 3 шт','Ид карсун Сэск+','Куртка+','Дима на телефон +','СБИС','Счет на материалы окна'],['Договор Сэск','Кс по 4 объектам'],[]];
+let start=new Date(2026,9,19), chosen=0, editing=null, tasks=readTasks();
+function readTasks(){try{let x=localStorage.getItem('monoPlannerV1');if(x)return JSON.parse(x)}catch(e){}return initial.map((a,d)=>a.map((text,i)=>({id:`demo-${d}-${i}`,text,done:false})))}
+function persist(){try{localStorage.setItem('monoPlannerV1',JSON.stringify(tasks))}catch(e){}}
+function monday(d){let x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()-(x.getDay()+6)%7);return x}
+function dateAt(i){let d=new Date(start);d.setDate(d.getDate()+i);return d}
+function fmt(d){return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`}
+function weekNo(d){let x=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));x.setUTCDate(x.getUTCDate()+4-(x.getUTCDay()||7));let y=new Date(Date.UTC(x.getUTCFullYear(),0,1));return Math.ceil((((x-y)/86400000)+1)/7)}
+function render(){
+ const end=dateAt(6),today=new Date();
+ document.getElementById('currentDate').textContent=fmt(today);
+ document.getElementById('weekRange').textContent=`${fmt(start)} — ${fmt(end)} · Неделя ${weekNo(start)}`;
+ const left=document.getElementById('left'),right=document.getElementById('right');left.innerHTML='';right.innerHTML='';
+ for(let i=0;i<7;i++){
+  const d=dateAt(i),arr=tasks[i]||[],weekend=i>=5,card=document.createElement('article');card.className='day'+(weekend?' weekend':'');
+  card.innerHTML=`<div class="dayhead"><div class="dayname">${names[i]}</div><div class="daynum">${d.getDate()}<span class="month"> ${months[d.getMonth()]}</span></div><div class="daycount">${arr.length}</div><button class="menu" aria-label="Добавить дело" title="Добавить">···</button></div><div class="tasks"></div><button class="addday">+ Добавить</button>`;
+  const list=card.querySelector('.tasks');
+  if(!arr.length){const empty=document.createElement('div');empty.className='empty';empty.textContent='Нет записей';list.append(empty)}
+  for(const t of arr){
+   const row=document.createElement('div');row.className='task'+(t.done?' done':'');
+   const check=document.createElement('button');check.className='check'+(t.done?' done':'');check.setAttribute('aria-label','Отметить выполнение');check.addEventListener('click',()=>{t.done=!t.done;persist();render()});
+   const text=document.createElement('div');text.className='tasktext';text.textContent=t.text;text.title='Нажмите, чтобы изменить';text.addEventListener('click',()=>openEditor(i,t.id));
+   row.append(check,text);list.append(row);
+  }
+  card.querySelector('.menu').addEventListener('click',()=>openEditor(i,null));
+  card.querySelector('.addday').addEventListener('click',()=>openEditor(i,null));
+  (i<3?left:right).append(card);
+ }
+}
+function openEditor(day,id=null){
+ chosen=day;editing=id;document.getElementById('daySelect').value=String(day);
+ let item=id===null?null:(tasks[day]||[]).find(x=>x.id===id);
+ document.getElementById('modalTitle').textContent=item?'Изменить дело':'Новая запись';
+ document.getElementById('taskInput').value=item?item.text:'';
+ document.getElementById('delete').style.display=item?'inline-block':'none';
+ document.getElementById('editDialog').showModal();setTimeout(()=>document.getElementById('taskInput').focus(),40);
+}
+document.getElementById('daySelect').addEventListener('change',e=>chosen=Number(e.target.value));
+document.getElementById('editForm').addEventListener('submit',e=>{
+ e.preventDefault();let text=document.getElementById('taskInput').value.trim();if(!text)return;let day=Number(document.getElementById('daySelect').value);
+ if(editing!==null){let old=chosen,item=(tasks[old]||[]).find(x=>x.id===editing);if(item){if(old!==day){tasks[old]=tasks[old].filter(x=>x.id!==editing);item.text=text;tasks[day].push(item)}else item.text=text}}
+ else tasks[day].push({id:'task-'+Date.now(),text,done:false});
+ persist();document.getElementById('editDialog').close();render();
+});
+document.getElementById('delete').addEventListener('click',()=>{if(editing!==null){tasks[chosen]=tasks[chosen].filter(x=>x.id!==editing);persist();document.getElementById('editDialog').close();render()}});
+document.getElementById('cancel').addEventListener('click',()=>document.getElementById('editDialog').close());
+document.getElementById('prev').addEventListener('click',()=>{start.setDate(start.getDate()-7);render()});
+document.getElementById('next').addEventListener('click',()=>{start.setDate(start.getDate()+7);render()});
+document.getElementById('today').addEventListener('click',()=>{start=monday(new Date());render()});
+document.getElementById('pickDate').addEventListener('click',()=>{document.getElementById('dateInput').value=dateAt(0).getFullYear()+'-'+String(dateAt(0).getMonth()+1).padStart(2,'0')+'-'+String(dateAt(0).getDate()).padStart(2,'0');document.getElementById('dateDialog').showModal()});
+document.getElementById('cancelDate').addEventListener('click',()=>document.getElementById('dateDialog').close());
+document.getElementById('dateForm').addEventListener('submit',e=>{e.preventDefault();let d=new Date(document.getElementById('dateInput').value+'T12:00:00');if(!isNaN(d))start=monday(d);document.getElementById('dateDialog').close();render()});
+document.getElementById('add').addEventListener('click',()=>openEditor(chosen,null));
+document.getElementById('searchBtn').addEventListener('click',()=>{document.getElementById('searchInput').value='';document.getElementById('searchResults').textContent='';document.getElementById('searchDialog').showModal()});
+document.getElementById('cancelSearch').addEventListener('click',()=>document.getElementById('searchDialog').close());
+document.getElementById('searchForm').addEventListener('submit',e=>{e.preventDefault();let q=document.getElementById('searchInput').value.trim().toLowerCase(),out=[];tasks.forEach((a,d)=>a.forEach(t=>{if(t.text.toLowerCase().includes(q))out.push(`${names[d]}: ${t.text}`)}));document.getElementById('searchResults').textContent=out.length?out.join(' · '):'Ничего не найдено';});
+let x0=null;document.getElementById('week').addEventListener('touchstart',e=>x0=e.changedTouches[0].clientX,{passive:true});document.getElementById('week').addEventListener('touchend',e=>{if(x0===null)return;let dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>70){start.setDate(start.getDate()+(dx<0?7:-7));render()}x0=null},{passive:true});
+render();
+</script>
+</body>
+</html>
